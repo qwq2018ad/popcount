@@ -4,6 +4,9 @@
 #include <bitset>
 #include <cmath>// 包含 log2 函數
 #include <chrono>
+
+#include <fstream>
+#include <sstream>
 using namespace std;
 
 int ceilLog2_atcgmap_Count; //全域變數字母表數量
@@ -25,7 +28,7 @@ unsigned long long generate_WitnessBit(int m, int n, int sliceIndex) {
     // 生成模式並填充到 result 中
     for (i = 0; i < totalBits; ++i) {
         // 如果當前位是在模式中的 '1' 的位置
-        if ((currentBit - (currentBit/patternSize)* patternSize) == 0) {
+        if ((currentBit - (currentBit / patternSize) * patternSize) == 0) {
             result |= (1ULL << (i));
         }
         currentBit++;
@@ -75,6 +78,8 @@ int calculateHammingDistance(const string& bitStr1, const string& bitStr2) {
 
         xorResult = num1 ^ num2; // XOR 運算
 
+        B_WitnessBit = generate_WitnessBit(m, n, i);
+        BinvWitnessBit = ~B_WitnessBit;
         hammingDistance += popcount((xorResult + BinvWitnessBit) & B_WitnessBit);
     }
 
@@ -82,11 +87,11 @@ int calculateHammingDistance(const string& bitStr1, const string& bitStr2) {
 }
 
 int main() {
-    unordered_map<char, string> atcgmapToBit = {
-        {'A', "000"},
-        {'T', "001"},
-        {'C', "010"},
-        {'G', "011"}
+    unordered_map<char, unsigned char> atcgmapToBit = {
+        {'A', 0},
+        {'T', 1},
+        {'C', 2},
+        {'G', 3}
     };
     size_t atcgmap_Count = atcgmapToBit.size();
 
@@ -105,8 +110,36 @@ int main() {
     //string atcgStr1 = "ATCTGTAG";//8
     //string atcgStr2 = "ATCGATCG";//8 
 
-    string atcgStr1 = "AAAA";//12
-    string atcgStr2 = "ATCG";//12
+    //string atcgStr1 = "AAAA";//12
+    //string atcgStr2 = "ATCG";//12
+    // 
+    // 檔案名稱
+    string filename1 = "dna_1G.txt";
+    string filename2 = "dna_1G.txt";
+
+    ifstream infile1(filename1);       // 以讀取模式打開檔案
+    ifstream infile2(filename2);       // 以讀取模式打開檔案
+
+    // 檢查檔案是否成功打開
+    if (!infile1) {
+        cerr << "無法打開檔案 " << filename1 << endl;
+        return 1;
+    }
+
+    // 檢查檔案是否成功打開
+    if (!infile2) {
+        cerr << "無法打開檔案 " << filename2 << endl;
+        return 1;
+    }
+
+    stringstream buffer1;
+    stringstream buffer2;
+
+    buffer1 << infile1.rdbuf();  // 將檔案內容讀入到 stringstream 中
+    buffer2 << infile2.rdbuf();  // 將檔案內容讀入到 stringstream 中
+
+    string atcgStr1 = buffer1.str();  // 將 stringstream 中的內容轉換為 string
+    string atcgStr2 = buffer2.str();
 
     atcgStr1_Count = atcgStr1.length();
 
@@ -143,8 +176,8 @@ int main() {
         int hammingDistance = calculateHammingDistance(bitStr1, bitStr2);
         auto end = chrono::high_resolution_clock::now();
         // 輸出結果
-        cout << atcgStr1<< " 的二進制表示: " << bitStr1 << endl;
-        cout << atcgStr2<< " 的二進制表示: " << bitStr2 << endl;
+        //cout << atcgStr1<< " 的二進制表示: " << bitStr1 << endl;
+        //cout << atcgStr2<< " 的二進制表示: " << bitStr2 << endl;
         cout << "漢明距離: " << hammingDistance << endl;
 
         // 計算經過的時間
